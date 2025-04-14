@@ -1,38 +1,45 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# Gradle
+build
+gradle.properties
+.gradle
+local.properties
+out
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
+# Maven (examples)
+target
+
+# Bazel
+bazel-bin
+bazel-examples
+bazel-genfiles
+bazel-grpc-java
+bazel-out
+bazel-testlogs
+MODULE.bazel.lock
+
+# IntelliJ IDEA
+.idea
 *.iml
 *.ipr
+*.iws
+.ijwb
 
-### Eclipse ###
-.apt_generated
+# Eclipse
 .classpath
-.factorypath
 .project
 .settings
-.springBeans
-.sts4-cache
+.gitignore
+bin
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+# OS X
 .DS_Store
+
+# Emacs
+*~
+\#*\#
+
+# ARM tests
+qemu-arm-static
+
+# Temporary output dir for artifacts
+mvn-artifacts
