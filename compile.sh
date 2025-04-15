@@ -14,7 +14,7 @@ source_venv() {
 
 generate_gRPC() {
 	printf "\nGenerating gRPC code...\n"
-	$PROTOC -l "${PROTO_DIR}" --python-out="${SRC_DIR}" --pyi_out="${SRC_DIR}" --grpc_python_out="${SRC_DIR}""${PROTO_DIR}"/*.proto
+	$PROTOC -I "${PROTO_DIR}" --python_out="${SRC_DIR}" --pyi_out="${SRC_DIR}" --grpc_python_out="${SRC_DIR}""${PROTO_DIR}"/*.proto
 }
 
 install_requirements() {
@@ -27,4 +27,5 @@ $PYTHON -m venv "${VENV_DIR}"
 source_venv
 
 install_requirements
+
 generate_gRPC

@@ -16,19 +16,14 @@
 from __future__ import print_function
 
 import logging
+import argparse
 
 import grpc
 import helloworld_pb2
 import helloworld_pb2_grpc
-import sys
 
 
-def run():
-    if len(sys.argv) < 2:
-        print("Usage: python client.py <name>")
-        sys.exit(1)
-
-    names = sys.argv[1].split(",")
+def run(names):
     with grpc.insecure_channel("localhost:50051") as channel:
         stub = helloworld_pb2_grpc.GreeterStub(channel)
         for name in names:
@@ -37,5 +32,11 @@ def run():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="gRPC client.")
+    parser.add_argument(
+        "names", type=str, help="Comma-separated list of names to greet."
+    )
+    args = parser.parse_args()
+
     logging.basicConfig()
-    run()
+    run(args.names.split(","))
