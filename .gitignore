@@ -27,7 +27,7 @@ share/python-wheels/
 MANIFEST
 
 # Generated files on project compilation
-src/packages/
+src/packages/gRPC/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

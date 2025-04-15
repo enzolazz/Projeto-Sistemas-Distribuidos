@@ -26,24 +26,36 @@ class KeyValueStorer(kvs_grpc.KeyValueStorerServicer):
         self.hash = Armazenamento()
 
     def Insere(self, request, context):
-        print("Received insert request.")
+        print(
+            "Received insert request.", "chave:", request.chave, "valor:", request.valor
+        )
 
-        return self.hash.insere(request.chave, request.valor)
+        result = self.hash.insere(
+            kvs.ChaveValor(chave=request.chave, valor=request.valor)
+        )
+
+        print("Insert result:", result.versao)
+
+        return result
 
     def Consulta(self, request, context):
         print("Received select request.")
 
-        return self.hash.consulta(request.chave, request.versao)
+        return self.hash.consulta(
+            kvs.ChaveVersao(chave=request.chave, versao=request.versao)
+        )
 
     def Remove(self, request, context):
         print("Received delete request.")
 
-        return self.hash.remove(request.chave, request.versao)
+        return self.hash.remove(
+            kvs.ChaveVersao(chave=request.chave, versao=request.versao)
+        )
 
     def Snapshot(self, request, context):
         print("Received snapshot request.")
 
-        return self.hash.snapshot(request.versao)
+        return self.hash.snapshot(kvs.Versao(versao=request.versao))
 
 
 def serve():
