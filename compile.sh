@@ -32,12 +32,8 @@ build() {
 
 	if [ ! -d "${VENV_DIR}" ]; then
 		printf "\nCreating virtual environment...\n"
+  
 		$PYTHON -m venv "${VENV_DIR}"
-
-		# printf "\nCreating symlink for protoc...\n"
-		# echo "${PROTOC} \"\$@\"" >"${VENV_DIR}/bin/protoc"
-		# chmod +x "${VENV_DIR}/bin/protoc"
-
 		source_venv
 
 		install_requirements
@@ -65,6 +61,7 @@ case $1 in
 	exit
 	;;
 "requirements")
+	source_venv
 	install_requirements
 	exit
 	;;
