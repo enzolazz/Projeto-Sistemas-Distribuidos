@@ -20,17 +20,19 @@ import logging
 import grpc
 import helloworld_pb2
 import helloworld_pb2_grpc
+import sys
 
 
 def run():
-    # NOTE(gRPC Python Team): .close() is possible on a channel and should be
-    # used in circumstances in which the with statement does not fit the needs
-    # of the code.
-    print("Will try to greet world ...")
+    if len(sys.argv) < 2:
+        print("Usage: python client.py <name>")
+        sys.exit(1)
+
+    name = sys.argv[1]
     with grpc.insecure_channel("localhost:50051") as channel:
         stub = helloworld_pb2_grpc.GreeterStub(channel)
-        response = stub.SayHello(helloworld_pb2.HelloRequest(name="you"))
-    print("Greeter client received: " + response.message)
+        response = stub.SayHello(helloworld_pb2.HelloRequest(name=name))
+        print("Greeter client received: " + response.message)
 
 
 if __name__ == "__main__":
