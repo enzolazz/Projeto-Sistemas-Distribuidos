@@ -47,6 +47,16 @@ install_requirements() {
 
 build() {
 	printf "\nBuilding...\n"
+
+	if [ ! -d "${VENV_DIR}" ]; then
+		printf "\nCreating virtual environment...\n"
+		$PYTHON -m venv "${VENV_DIR}"
+	else
+		printf "\nVirtual environment already exists.\n"
+	fi
+
+	source_venv
+
 	install_requirements
 	generate_gRPC
 }
@@ -57,9 +67,6 @@ clean() {
 	rm -rf "${PACKAGES_DIR}"
 }
 
-$PYTHON -m venv "${VENV_DIR}"
-source_venv
-
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 
 case $1 in
@@ -67,13 +74,11 @@ case $1 in
 	clean
 	exit
 	;;
-"build")
-	build
-	exit
-	;;
 "") ;;
 *)
-	printf "Argumento não reconhecido: %s\n" $1
+	printf "Not a valid argument: %s\n" $1
 	exit 1
 	;;
 esac
+
+build
