@@ -27,7 +27,4 @@ $PYTHON -m venv "${VENV_DIR}"
 source_venv
 
 install_requirements
-
-if [ "$SOURCE" -ne 1 ]; then
-	generate_gRPC
-fi
+generate_gRPC

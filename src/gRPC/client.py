@@ -28,11 +28,12 @@ def run():
         print("Usage: python client.py <name>")
         sys.exit(1)
 
-    name = sys.argv[1]
+    names = sys.argv[1].split(",")
     with grpc.insecure_channel("localhost:50051") as channel:
         stub = helloworld_pb2_grpc.GreeterStub(channel)
-        response = stub.SayHello(helloworld_pb2.HelloRequest(name=name))
-        print("Greeter client received: " + response.message)
+        for name in names:
+            response = stub.SayHello(helloworld_pb2.HelloRequest(name=name))
+            print("Greeter client received: " + response.message)
 
 
 if __name__ == "__main__":
