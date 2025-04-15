@@ -1,0 +1,14 @@
+[project]
+name = "projeto-sistemas-distribuidos"
+version = "0.1.0"
+dependencies = [
+    "grpcio>=1.71.0",
+    "grpcio-tools>=1.71.0",
+]
+requires-python = ">=3.12"
+authors = [
+  {name = "Enzo Lazzarini Amorim", email="enzolazzamor@ufu.br"},
+  {name = "João Lucas Pontes Freitas", email="joaolucaspontesfreitas@ufu.br"},
+]
+description = "Projeto da disciplina GBC074 (Sistemas Distribuídos)."
+readme = "README.md"
