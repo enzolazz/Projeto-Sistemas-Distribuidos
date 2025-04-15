@@ -37,12 +37,79 @@ message Versao {
   int32 versao = 1;
 }
 
-service KVS {
+service KeyValueStorer {
+  //
+  // Cliente:
+  //  - informa chave e valor.
+  // Servidor:
+  //  - cadastra a nova versão com o valor informado para a chave.
+  //  O primeiro valor de cada chave tem versão 1.
+  //  - retorna a versão associada ao novo valor no campo status.
+  //  - retorna -1 em caso de erro.
   rpc Insere(ChaveValor) returns (Versao) {}
+
+  //
+  // Cliente
+  // - informa chave e versão (opcional) para consulta.
+  // Servidor:
+  // - pesquisa valor para a chave informada com a versão imediatamente
+  // menor ou igual à versão passada como argumento, ou a versão mais
+  // recente caso nenhuma versão seja informada.
+  // - retorna Tupla com chave, valor e versão encontrados.
+  // - retorna Tupla com dados em branco, caso contrário.
   rpc Consulta(ChaveVersao) returns (Tupla) {}
+
+  //
+  // Cliente:
+  // - informa chave e versão (opcional) para remoção.
+  // Servidor:
+  // - remove valor associado à versão informada para a chave,
+  // ou todos os valores caso nenhuma versão seja informada.
+  // - retorna Versao com a versão efetivamente removida.
+  // - retorna -1 caso a chave ou versão sejam inválidas,
+  // a chave não exista ou não exista a versão informada para a chave.
   rpc Remove(ChaveVersao) returns (Versao) {}
-  rpc InsereVarias(stream ChaveValor) returns (stream Versao) {}
+
+  //
+  // Cliente:
+  // - informa conjunto chaves e versões (opcional) para consulta.
+  // Servidor:
+  // - para cada chave: pesquisa valor associado à versão imediatamente
+  // menor ou igual à versão passada como argumento, ou a versão mais
+  // recente caso nenhuma versão seja informada.
+  // - para cada chave: retorna Tupla com chave, valor e versão
+  // encontrados ou Tupla com dados em branco, caso contrário.
   rpc ConsultaVarias(stream ChaveVersao) returns (stream Tupla) {}
+
+  //
+  // Cliente:
+  // - informa conjunto de chaves e valor para inserção.
+  // Servidor:
+  // - para cada chave: insere cada chave e valor informado,
+  // ajustando a versão de acordo.
+  // - para cada chave: retorna Versao inserida ou retorna -1
+  // em caso de erro.
+  rpc InsereVarias(stream ChaveValor) returns (stream Versao) {}
+
+  //
+  // Cliente:
+  // - informa conjunto de chaves e versões (opcional) para remoção.
+  // Servidor:
+  // - para cada chave: remove valor associado à versão informada,
+  // ou todos os valores caso nenhuma versão seja informada.
+  // - para cada chave: retorna Versao efetivamente removida ou
+  // retorna -1 no caso de chave ou versão inválidas ou inexistentes.
   rpc RemoveVarias(stream ChaveVersao) returns (stream Versao) {}
+
+  //
+  // Cliente:
+  // - informa versão para snapshot.
+  // Servidor:
+  // - retorna conjunto de Tuplas considerando, para cada chave,
+  // a versão imediatamente menor ou igual à versão solicitada.
+  // - retorna Tuplas com versões mais recentes para cada chave caso
+  // a versão informada seja menor ou igual a zero.
+  // - retorna Tupla em branco caso a versão seja inválida ou
+  // não existam chaves que atendem ao critério.
   rpc Snapshot(Versao) returns (stream Tupla) {}
 }
