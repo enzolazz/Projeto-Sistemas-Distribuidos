@@ -19,8 +19,8 @@ import logging
 import argparse
 
 import grpc
-import helloworld_pb2
-import helloworld_pb2_grpc
+from packages.gRPC import helloworld_pb2
+from packages.gRPC import helloworld_pb2_grpc
 
 
 def run(names):

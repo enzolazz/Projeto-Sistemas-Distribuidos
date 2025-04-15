@@ -1,183 +1,177 @@
-# C/C++ build outputs
-.build/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
 build/
-bins
-gens
-libs
-objs
-
-# Python items
-.coverage*
-.eggs
-.pytype
-*.egg
-*.egg-info
-a.out
-cython_debug/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Generated files on project compilation
+src/packages/
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
 htmlcov/
-py3*/
-pyb/
-python_pylint_venv/
-src/python/grpcio_*/=*
-src/python/grpcio_*/build/
-src/python/grpcio_*/LICENSE
-src/python/grpcio_status/grpc_status/google/rpc/status.proto
-black_virtual_environment/
-isort_virtual_environment/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
 
-# Node installation output
-node_modules
-src/node/extension_binary/
+# Translations
+*.mo
+*.pot
 
-# gcov coverage data
-reports
-coverage
-*.gcno
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
-# profiler output
-*.prof
+# Flask stuff:
+instance/
+.webassets-cache
 
-# python compiled objects
-*.pyc
+# Scrapy stuff:
+.scrapy
 
-# eclipse project files
-.cproject
-.project
-.settings
+# Sphinx documentation
+docs/_build/
 
-# cache for run_tests.py
-.run_tests_cache
-.preprocessed_build
+# PyBuilder
+.pybuilder/
+target/
 
-# emacs temp files
-*~
+# Jupyter Notebook
+.ipynb_checkpoints
 
-# vim temp files
-.*.swp
-.*.swo
+# IPython
+profile_default/
+ipython_config.py
 
-# Makefile's cache
-cache.mk
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
 
-# Ruby's local gem information
-Gemfile.lock
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
 
-# Temporary test reports
-report.xml
-*/sponge_log.xml
-*/success_log_to_rename.xml
-latency_trace.txt
-latency_trace.*.txt
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
 
-# port server log
-portlog.txt
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
 
-# gyp generated make files
-*-gyp.mk
-out
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
+.pdm.toml
+.pdm-python
+.pdm-build/
 
-# YCM config files
-.ycm_extra_conf.py
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
 
-# XCode
-^build/
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-*.xccheckout
-*.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
-*.DS_Store
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
 
-# Swift Package Manager files
-Package.resolved
+# SageMath parsed files
+*.sage.py
 
-# Objective-C generated files
-*.pbobjc.*
-*.pbrpc.*
-src/objective-c/**/Build
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Cocoapods artifacts
-Pods/
-Podfile.lock
-*.xcworkspace
+# Spyder project settings
+.spyderproject
+.spyproject
 
-# Artifacts directory
-/artifacts/
+# Rope project settings
+.ropeproject
 
-# Git generated files for conflicting
-*.orig
+# mkdocs documentation
+/site
 
-# IDE specific folder for JetBrains IDEs
-.idea/
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
-# Bazel files
-bazel-*
-bazel_format_virtual_environment/
-tools/bazel-*
+# Pyre type checker
+.pyre/
 
-# Bazel wrapper
-bazel_wrapper
-bazel_wrapper.bat
-bazel_wrapper.bazelrc
+# pytype static type analyzer
+.pytype/
 
-# Debug output
-gdb.txt
+# Cython debug symbols
+cython_debug/
 
-# ctags file
-tags
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
 
-# perf data
-memory_usage.csv
-perf.data
-perf.data.old
+# Ruff stuff:
+.ruff_cache/
 
-# bm_diff
-bloat_diff_new/
-bloat_diff_old/
-bloaty-build/
-
-# cmake build files
-**/cmake/build/
-
-# Visual Studio Code artifacts
-.cache/*
-.vscode/*
-.history/
-
-# Clion artifacts
-cmake-build-debug/
-
-# Benchmark outputs
-BenchmarkDotNet.Artifacts/
-
-# pyenv config
-.python-version
-
-# clang JSON compilation database file
-compile_commands.json
-
-# IWYU byproducts
-compile_commands_for_iwyu.json
-iwyu.out
-iwyu_files.txt
-iwyu_files0.txt
-iwyu/
-iwyu_build/
-
-# fuzzer logs
-fuzz-*.log
-
-# bazel module files
-third_party/**/MODULE.bazel
-MODULE.bazel.lock
+# PyPI configuration file
+.pypirc

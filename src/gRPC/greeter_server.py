@@ -17,8 +17,8 @@ from concurrent import futures
 import logging
 
 import grpc
-import helloworld_pb2
-import helloworld_pb2_grpc
+from packages.gRPC import helloworld_pb2
+from packages.gRPC import helloworld_pb2_grpc
 
 
 class Greeter(helloworld_pb2_grpc.GreeterServicer):
