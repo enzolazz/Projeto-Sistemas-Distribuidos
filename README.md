@@ -40,3 +40,14 @@ cd Projeto-Sistemas-Distribuidos
 ```
 
 </details>
+
+<details>
+  <summary>Verificar dependências</summary>
+
+Caso seja necessário verificar as dependências do projeto, execute o script com argumento `requirements`:
+
+```bash
+./compile.sh requirements
+```
+
+</details>

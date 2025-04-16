@@ -52,7 +52,7 @@ build() {
 clean() {
 	printf "\nCleaning...\n"
 	rm -rf "${VENV_DIR}"
-	rm -rf "${PACKAGES_DIR}"
+	rm -rf "${PACKAGES_DIR}/gRPC"
 }
 
 case $1 in
