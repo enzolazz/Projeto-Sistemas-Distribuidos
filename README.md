@@ -31,8 +31,8 @@ cd Projeto-Sistemas-Distribuidos
 ./compile.sh
 ```
 
-<details>
-    <summary>Clean no projeto</summary>
+- <details>
+    <summary>Caso seja necessário limpar o projeto</summary>
   Caso seja necessário limpar o projeto, execute o script com argumento `clean`:
 
 ```bash
@@ -41,8 +41,8 @@ cd Projeto-Sistemas-Distribuidos
 
 </details>
 
-<details>
-  <summary>Verificar dependências</summary>
+- <details>
+  <summary>Verificar dependências (se necessário)</summary>
 
 Caso seja necessário verificar as dependências do projeto, execute o script com argumento `requirements`:
 

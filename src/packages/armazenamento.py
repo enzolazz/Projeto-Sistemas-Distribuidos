@@ -7,7 +7,7 @@ class Armazenamento:
         self.tabela = defaultdict(list)
         self.versoes = defaultdict(int)
 
-    def insere(self, request):
+    def insere(self, request) -> kvs.Versao:
         chave, valor = request.chave, request.valor
 
         if (
@@ -18,10 +18,7 @@ class Armazenamento:
         ):
             return kvs.Versao(versao=-1)
 
-        if chave not in self.tabela:
-            self.versoes[chave] += 1
-        else:
-            self.versoes[chave] += 1
+        self.versoes[chave] += 1
 
         self.tabela[chave].append((valor, self.versoes[chave]))
 
@@ -34,7 +31,7 @@ class Armazenamento:
             return kvs.Tupla()
 
         if versao == 0:
-            _, versao = max(self.tabela[chave], key=lambda x: x[1])
+            versao = self.versoes[chave]
 
         for valor, _versao in reversed(self.tabela[chave]):
             if _versao <= versao:

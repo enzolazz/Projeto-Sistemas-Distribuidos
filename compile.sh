@@ -17,7 +17,7 @@ generate_gRPC() {
 	protol \
 		--create-package --in-place \
 		--python-out "${GRPC_PACKAGE_DIR}" \
-		protoc --proto-path="${PROTO_DIR}" helloworld.proto kvs.proto \
+		protoc --proto-path="${PROTO_DIR}" kvs.proto \
 		--protoc-path "${PROTOC}"
 }
 
@@ -32,7 +32,7 @@ build() {
 
 	if [ ! -d "${VENV_DIR}" ]; then
 		printf "\nCreating virtual environment...\n"
-  
+
 		$PYTHON -m venv "${VENV_DIR}"
 		source_venv
 

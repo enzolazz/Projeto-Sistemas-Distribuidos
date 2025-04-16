@@ -37,7 +37,7 @@ message Versao {
   int32 versao = 1;
 }
 
-service KeyValueStorer {
+service KVS {
   //
   // Cliente:
   //  - informa chave e valor.

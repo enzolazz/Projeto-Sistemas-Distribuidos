@@ -14,6 +14,7 @@
 
 from concurrent import futures
 import logging
+import argparse
 
 import grpc
 from packages.gRPC import kvs_pb2 as kvs
@@ -21,7 +22,7 @@ from packages.gRPC import kvs_pb2_grpc as kvs_grpc
 from packages.armazenamento import Armazenamento
 
 
-class KeyValueStorer(kvs_grpc.KeyValueStorerServicer):
+class KVS(kvs_grpc.KVSServicer):
     def __init__(self):
         self.hash = Armazenamento()
 
@@ -38,8 +39,32 @@ class KeyValueStorer(kvs_grpc.KeyValueStorerServicer):
 
         return result
 
+    def InsereVarias(self, request_iterator, context):
+        print("Received batch insert.", request_iterator, sep="\n")
+
+        for request in request_iterator:
+            yield self.hash.insere(
+                kvs.ChaveValor(chave=request.chave, valor=request.valor)
+            )
+
+    def ConsultaVarias(self, request_iterator, context):
+        print("Received batch select.", request_iterator, sep="\n")
+
+        for request in request_iterator:
+            yield self.hash.consulta(
+                kvs.ChaveVersao(chave=request.chave, versao=request.versao)
+            )
+
+    def RemoveVarias(self, request_iterator, context):
+        print("Received batch delete.", request_iterator, sep="\n")
+
+        for request in request_iterator:
+            yield self.hash.remove(
+                kvs.ChaveVersao(chave=request.chave, versao=request.versao)
+            )
+
     def Consulta(self, request, context):
-        print("Received select request.")
+        print("Received select request.", request)
 
         return self.hash.consulta(
             kvs.ChaveVersao(chave=request.chave, versao=request.versao)
@@ -58,10 +83,10 @@ class KeyValueStorer(kvs_grpc.KeyValueStorerServicer):
         return self.hash.snapshot(kvs.Versao(versao=request.versao))
 
 
-def serve():
-    port = "50051"
+def serve(PORT: str):
+    port = PORT
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    kvs_grpc.add_KeyValueStorerServicer_to_server(KeyValueStorer(), server)
+    kvs_grpc.add_KVSServicer_to_server(KVS(), server)
     server.add_insecure_port("[::]:" + port)
     server.start()
     print("Server started, listening on " + port)
@@ -69,5 +94,15 @@ def serve():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Servidor gRPC. Recebe comandos do cliente via gRPC e executa operações no armazenamento."
+    )
+
+    parser.add_argument(
+        "-p", type=str, default="50051", help="Porta a ser utilizada pelo servidor"
+    )
+
+    args = parser.parse_args()
+
     logging.basicConfig()
-    serve()
+    serve(str(args.p))
