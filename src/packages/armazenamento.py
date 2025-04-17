@@ -36,9 +36,9 @@ class Armazenamento:
         if versao == 0:
             versao = self.versoes[chave]
 
-        for valor, _versao in reversed(self.tabela[chave]):
-            if _versao <= versao:
-                return kvs.Tupla(chave=chave, valor=valor, versao=_versao)
+        for valor, ver in reversed(self.tabela[chave]):
+            if ver <= versao:
+                return kvs.Tupla(chave=chave, valor=valor, versao=ver)
 
         return kvs.Tupla()
 
@@ -55,11 +55,11 @@ class Armazenamento:
         if not isinstance(versao, int):
             return kvs.Versao(versao=-1)
 
-        for valor, _versao in self.tabela[chave]:
-            if _versao == versao:
-                self.tabela[chave].remove((valor, _versao))
+        for valor, ver in self.tabela[chave]:
+            if ver == versao:
+                self.tabela[chave].remove((valor, ver))
 
-                return kvs.Versao(versao=_versao)
+                return kvs.Versao(versao=ver)
 
         return kvs.Versao(versao=-1)
 
@@ -70,8 +70,8 @@ class Armazenamento:
             return
 
         for chave in self.tabela:
-            versao_consulta = versao if versao > 0 else 0
-            tupla = self.consulta(kvs.ChaveVersao(chave=chave, versao=versao_consulta))
+            ver = versao if versao > 0 else 0
+            tupla = self.consulta(kvs.ChaveVersao(chave=chave, versao=ver))
             if tupla.chave:
                 yield tupla
 

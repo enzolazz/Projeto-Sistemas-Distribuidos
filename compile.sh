@@ -1,7 +1,5 @@
 . ./environment.sh
 
-set -e
-
 generate_gRPC() {
 	printf "\nGenerating gRPC code...\n"
 

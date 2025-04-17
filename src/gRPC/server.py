@@ -1,5 +1,5 @@
 from concurrent import futures
-import logging, argparse, json, uuid
+import logging, argparse, json
 import grpc
 import paho.mqtt.client as mqtt
 
@@ -36,7 +36,7 @@ class KVS(kvs_grpc.KVSServicer):
         self.mqtt_client.publish("kvs/comandos", json.dumps(data))
 
     def on_connect(self, client, userdata, flags, rc):
-        print("Conectado ao broker MQTT com resultado: " + str(rc))
+        print("Conectado ao broker MQTT com código: " + str(rc))
         client.subscribe("kvs/comandos")
         client.subscribe("kvs/atualizar/pedido")
         client.subscribe(f"kvs/atualizar/resposta/{self.id_servidor}")
@@ -49,6 +49,9 @@ class KVS(kvs_grpc.KVSServicer):
                 }
             ),
         )
+
+    def on_disconnect(self, client, userdata, rc):
+        print(f"Disconectado do broker MQTT com código: {rc}")
 
     def on_message(self, client, userdata, msg):
         payload = json.loads(msg.payload.decode())
@@ -159,12 +162,11 @@ class KVS(kvs_grpc.KVSServicer):
 
 
 def serve(PORT: str):
-    port = PORT
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     kvs_grpc.add_KVSServicer_to_server(KVS("server-" + PORT), server)
-    server.add_insecure_port("[::]:" + port)
+    bind_result = server.add_insecure_port("[::]:" + PORT)
     server.start()
-    print("Server started, listening on " + port)
+    print(f"Server started, listening on {bind_result}")
     server.wait_for_termination()
 
 
@@ -174,10 +176,15 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-p", type=str, default="50051", help="Porta a ser utilizada pelo servidor"
+        "-p",
+        "--port",
+        type=int,
+        required=True,
+        help="Porta a ser utilizada pelo servidor",
     )
 
     args = parser.parse_args()
 
     logging.basicConfig()
-    serve(str(args.p))
+
+    serve(str(args.port))
