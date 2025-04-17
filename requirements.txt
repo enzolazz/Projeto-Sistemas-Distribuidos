@@ -5,3 +5,4 @@ cython>=3.0.0
 protobuf>=5.26.1,<6.0dev
 wheel>=0.29
 protoletariat>=3.3.10
+paho-mqtt>=2.1.0
