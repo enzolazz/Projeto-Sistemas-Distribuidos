@@ -1,5 +1,5 @@
 from concurrent import futures
-import logging, argparse, json
+import logging, argparse, json, uuid
 import grpc
 import paho.mqtt.client as mqtt
 
@@ -9,9 +9,9 @@ from packages.armazenamento import Armazenamento
 
 
 class KVS(kvs_grpc.KVSServicer):
-    def __init__(self, server_id):
+    def __init__(self, port: str):
         self.hash = Armazenamento()
-        self.id_servidor = server_id
+        self.id_servidor = str(uuid.uuid4()) + f"-{port}"
         self.atualizando = False
 
         self.mqtt_client = mqtt.Client()
@@ -216,7 +216,7 @@ class KVS(kvs_grpc.KVSServicer):
 
 def serve(PORT: str):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    kvs_grpc.add_KVSServicer_to_server(KVS("server-" + PORT), server)
+    kvs_grpc.add_KVSServicer_to_server(KVS(PORT), server)
     bind_result = server.add_insecure_port("[::]:" + PORT)
     server.start()
     print(f"Server started, listening on {bind_result}")
