@@ -23,7 +23,7 @@ Foram utilizados os seguintes pacotes principais:
 - **grpcio-tools**: geração de código Python a partir de arquivos `.proto`.
 - **paho-mqtt**: para comunicação entre servidores via protocolo MQTT.
 - **protobuf**: manipulação de mensagens Protobuf.
-- **protoletariat**: para otimizar e consertar os imports gerados pelo protobuf.
+- **protoletariat**: para otimizar e consertar os imports gerados pelo protoc.
 - **argparse**: parsing de argumentos de linha de comando.
 - **logging**: geração de logs para depuração e acompanhamento.
 
@@ -89,4 +89,8 @@ ou
 
 ## Organização dos dados
 
-As tabelas hashs foram implementadas no [`src/packages/armazenamento`](./src/packages/armazenamento.py).
+As tabelas hashs foram implementadas no [`src/packages/armazenamento`](./src/packages/armazenamento.py). A implementeção é baseada em dicionários utilizando o pacote `defaultdict` do Python. As tabelas hash são armazenadas nos dicionários com as `keys` sendo as chaves passadas pelo cliente e os `values` sendo uma tupla (valor, versao) com o valor passado pelo cliente e sua respectiva versão dentro de cada chave. As tabelas hash são armazenadas em um dicionário chamado `tabelas` e cada chave também tem um dicionário chamado `versoes` que armazena as versões de cada chave em inteiros. O `Armazenamento` possui métodos de inserção, remoção e consulta de chaves, além do método snapshot que retorna um conjunto de tuplas com versões menores ou iguais a versão passada.
+
+## Descrição das dificuldades
+
+As dificuldades vieram na organização do código, ao tentar transformar gerado pelo `grpc_tools.protoc` em pacotes globais do projeto. A geração dos códigos é acompanhada de imports relativos, o que torna a importação dos pacotes gerados um pouco confusa. Para resolver isso, foi utilizado o pacote `protoletariat` para otimizar e consertar os imports gerados pelo `protoc`. O pacote `protoletariat` é um pacote de terceiros que foi instalado via pip nas dependências do projeto. As chamadas dos pacotes acontecem no arquivo [`compile.sh`](./compile.sh) na funcao `generate_gRPC`. De resto, as implementações foram tranquilas e não trouxeram muitas dificuldades.
