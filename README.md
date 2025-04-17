@@ -33,7 +33,7 @@ cd Projeto-Sistemas-Distribuidos
 
 <details>
     <summary>Limpar o projeto (se necessário)</summary>
-  Execute o script com argumento `clean`:
+Execute o script com argumento `clean`:
 
 ```bash
 ./compile.sh clean

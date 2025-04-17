@@ -7,6 +7,9 @@ class Armazenamento:
         self.tabela = defaultdict(list)
         self.versoes = defaultdict(int)
 
+    def __call__(self):
+        return self.tabela, self.versoes
+
     def insere(self, request) -> kvs.Versao:
         chave, valor = request.chave, request.valor
 
@@ -71,3 +74,7 @@ class Armazenamento:
             tupla = self.consulta(kvs.ChaveVersao(chave=chave, versao=versao_consulta))
             if tupla.chave:
                 yield tupla
+
+    def atualizar(self, tabela, versoes):
+        self.tabela = defaultdict(list, tabela)
+        self.versoes = defaultdict(int, versoes)
