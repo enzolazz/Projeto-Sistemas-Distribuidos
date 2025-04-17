@@ -21,6 +21,20 @@ class KVS(kvs_grpc.KVSServicer):
         self.mqtt_client.connect("localhost", 1883, 60)
         self.mqtt_client.loop_start()
 
+    def publish_comando(self, comando, request):
+        data = {
+            "remetente": self.id_servidor,
+            "comando": comando,
+            "chave": request.chave,
+        }
+
+        if comando == "insere":
+            data["valor"] = request.valor
+        elif comando == "remove":
+            data["versao"] = request.versao
+
+        self.mqtt_client.publish("kvs/comandos", json.dumps(data))
+
     def on_connect(self, client, userdata, flags, rc):
         print("Conectado ao broker MQTT com resultado: " + str(rc))
         client.subscribe("kvs/comandos")
@@ -76,6 +90,7 @@ class KVS(kvs_grpc.KVSServicer):
         elif msg.topic == f"kvs/atualizar/resposta/{self.id_servidor}":
             if self.atualizando:
                 return
+
             print("Atualizando os dados...")
             self.hash.atualizar(payload.get("tabela"), payload.get("versoes"))
 
@@ -89,39 +104,15 @@ class KVS(kvs_grpc.KVSServicer):
 
         cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
 
-        self.mqtt_client.publish(
-            "kvs/comandos",
-            json.dumps(
-                {
-                    "remetente": self.id_servidor,
-                    "comando": "insere",
-                    "chave": request.chave,
-                    "valor": request.valor,
-                }
-            ),
-        )
+        self.publish_comando("insere", request)
 
-        result = self.hash.insere(cv)
-
-        print("Insert result:", result.versao)
-
-        return result
+        return self.hash.insere(cv)
 
     def InsereVarias(self, request_iterator, context):
         print("Received batch insert.", request_iterator, sep="\n")
 
         for request in request_iterator:
-            self.mqtt_client.publish(
-                "kvs/comandos",
-                json.dumps(
-                    {
-                        "remetente": self.id_servidor,
-                        "comando": "insere",
-                        "chave": request.chave,
-                        "valor": request.valor,
-                    }
-                ),
-            )
+            self.publish_comando("insere", request)
 
             cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
 
@@ -139,19 +130,9 @@ class KVS(kvs_grpc.KVSServicer):
         print("Received batch delete.", request_iterator, sep="\n")
 
         for request in request_iterator:
-            cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
+            self.publish_comando("remove", request)
 
-            self.mqtt_client.publish(
-                "kvs/comandos",
-                json.dumps(
-                    {
-                        "remetente": self.id_servidor,
-                        "comando": "remove",
-                        "chave": request.chave,
-                        "versao": request.versao,
-                    }
-                ),
-            )
+            cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
 
             yield self.hash.remove(cv)
 
@@ -167,17 +148,7 @@ class KVS(kvs_grpc.KVSServicer):
 
         cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
 
-        self.mqtt_client.publish(
-            "kvs/comandos",
-            json.dumps(
-                {
-                    "remetente": self.id_servidor,
-                    "comando": "remove",
-                    "chave": request.chave,
-                    "versao": request.versao,
-                }
-            ),
-        )
+        self.publish_comando("insere", request)
 
         return self.hash.remove(cv)
 
