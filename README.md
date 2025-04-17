@@ -30,10 +30,10 @@ cd Projeto-Sistemas-Distribuidos
 ```bash
 ./compile.sh
 ```
-
-- <details>
+<details>
     <summary>Caso seja necessário limpar o projeto</summary>
-  Caso seja necessário limpar o projeto, execute o script com argumento `clean`:
+    
+    Caso seja necessário limpar o projeto, execute o script com argumento `clean`:
 
 ```bash
 ./compile.sh clean
@@ -41,10 +41,10 @@ cd Projeto-Sistemas-Distribuidos
 
 </details>
 
-- <details>
+<details>
   <summary>Verificar dependências (se necessário)</summary>
-
-Caso seja necessário verificar as dependências do projeto, execute o script com argumento `requirements`:
+    
+    Caso seja necessário verificar as dependências do projeto, execute o script com argumento `requirements`:
 
 ```bash
 ./compile.sh requirements
