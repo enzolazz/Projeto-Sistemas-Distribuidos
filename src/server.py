@@ -41,16 +41,19 @@ class KVS(kvs_grpc.KVSServicer):
 
             if comando == "insere":
                 data["valor"] = request.valor
+
             elif comando == "remove":
                 data["versao"] = request.versao
 
-            self.mqtt_client.publish("kvs/comandos", json.dumps(data))
+            self.mqtt_client.publish("kvs/comandos", json.dumps(data), 1, qos=1)
+
         except Exception as e:
             logging.error(f"Erro ao publicar comando: {e}, com requisicao: {request}")
 
     def on_connect(self, client, userdata, flags, reason_code, properties):
         if reason_code == 0:
             logging.info("Conectado ao broker MQTT com sucesso.")
+
         if reason_code > 0:
             logging.error(f"Erro ao conectar ao broker MQTT. Código: {reason_code}")
             raise ConnectionRefusedError("Erro ao conectar ao broker MQTT.")
@@ -65,12 +68,14 @@ class KVS(kvs_grpc.KVSServicer):
                 {
                     "remetente": self.id_servidor,
                 }
-            ),
+            ), 
+            qos=1
         )
 
     def on_disconnect(self, client, userdata, flags, reason_code, properties):
         if reason_code == 0:
             logging.info("Disconectado ao broker MQTT com sucesso.")
+
         if reason_code > 0:
             logging.error(f"Erro ao desconectar ao broker MQTT. Código: {reason_code}")
             raise ConnectionRefusedError("Erro ao desconectar ao broker MQTT.")
@@ -78,6 +83,7 @@ class KVS(kvs_grpc.KVSServicer):
     def on_message(self, client, userdata, message):
         try:
             payload = json.loads(message.payload.decode())
+
         except json.JSONDecodeError:
             logging.error(
                 f"Erro ao decodificar a mensagem, recebida via MQTT no tópico {message.topic}:\n\
@@ -100,14 +106,14 @@ class KVS(kvs_grpc.KVSServicer):
                 cv = kvs.ChaveValor(
                     chave=str(payload.get("chave")), valor=str(payload.get("valor"))
                 )
-
                 self.hash.insere(cv)
+
             elif payload.get("comando") == "remove":
                 cv = kvs.ChaveVersao(
                     chave=str(payload.get("chave")), versao=int(payload.get("versao"))
                 )
-
                 self.hash.remove(cv)
+
         elif message.topic == "kvs/atualizar/pedido":
             client.publish(
                 f"kvs/atualizar/resposta/{payload.get("remetente")}",
@@ -118,7 +124,9 @@ class KVS(kvs_grpc.KVSServicer):
                         "versoes": self.hash()[1],
                     }
                 ),
+                qos=1
             )
+
         elif message.topic == f"kvs/atualizar/resposta/{self.id_servidor}":
             if self.atualizando:
                 return
@@ -200,7 +208,7 @@ class KVS(kvs_grpc.KVSServicer):
 
         cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
 
-        self.publish_comando("insere", request)
+        self.publish_comando("remove", request)
 
         return self.hash.remove(cv)
 
