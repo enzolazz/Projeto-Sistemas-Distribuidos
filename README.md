@@ -9,9 +9,27 @@
 - Enzo Lazzarini Amorim
 - João Lucas Pontes Freitas
 
-## Instruções de compilação
+## Dependências
 
-Supondo um ambiente Linux, com Python 3.12 ou superior instalado (e o pip), siga os passos abaixo para compilar e executar o projeto:
+- Ambiente Linux (Linux shell + utilitários básicos: /bin/sh, bash, mkdir, etc.).
+- Python (3.7 a 3.12 por suporte do pacote `paho-mqtt`) e pip.
+
+## Detalhes de instalação
+
+Foi utilizada a linguagem **Python 3.12.0** no desenvolvimento do projeto.
+Foram utilizados os seguintes pacotes principais:
+
+- **grpcio**: para comunicação gRPC entre cliente e servidor.
+- **grpcio-tools**: geração de código Python a partir de arquivos `.proto`.
+- **paho-mqtt**: para comunicação entre servidores via protocolo MQTT.
+- **protobuf**: manipulação de mensagens Protobuf.
+- **protoletariat**: para otimizar e consertar os imports gerados pelo protobuf.
+- **argparse**: parsing de argumentos de linha de comando.
+- **logging**: geração de logs para depuração e acompanhamento.
+
+Outras dependências auxiliares podem ser consultadas no arquivo [`requirements.txt`](./requirements.txt).
+
+## Instruções de compilação
 
 - Clone o repositório:
 
@@ -33,6 +51,7 @@ cd Projeto-Sistemas-Distribuidos
 
 <details>
     <summary>Limpar o projeto (se necessário)</summary>
+
 Execute o script com argumento `clean`:
 
 ```bash
@@ -51,3 +70,23 @@ Execute o script com argumento `requirements`:
 ```
 
 </details>
+
+Se tudo ocorreu bem, as dependências necessárias para o projeto estarão instaladas e os arquivos gerados pelo pacote do gRPC estarão na pasta [`src/packages/gRPC`](./src/packages/gRPC/).
+
+## Uso do servidor
+
+O servidor está inteiramente implementado no arquivo [`src/server.py`](./src/server.py), que cria uma classe `KVS` herdando o `KVSServicer` dos arquivos gerados pelo gRPC. O servidor é iniciado na porta `50051` por padrão, mas recebe como argumento a porta desejada via -p ou --port. O servidor pode ser iniciado com o seguinte comando:
+
+```bash
+./server.py -p <PORT>
+```
+
+ou
+
+```bash
+./server.py --port <PORT>
+```
+
+## Organização dos dados
+
+As tabelas hashs foram implementadas no [`src/packages/armazenamento`](./src/packages/armazenamento.py).
