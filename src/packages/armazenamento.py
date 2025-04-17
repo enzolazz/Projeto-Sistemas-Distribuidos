@@ -76,6 +76,5 @@ class Armazenamento:
                 yield tupla
 
     def atualizar(self, tabela, versoes):
-        self.tabela = tabela
-        self.versoes = versoes
-
+        self.tabela = defaultdict(list, tabela)
+        self.versoes = defaultdict(int, versoes)

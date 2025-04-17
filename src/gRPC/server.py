@@ -1,5 +1,5 @@
 from concurrent import futures
-import logging, argparse, json
+import logging, argparse, json, uuid
 import grpc
 import paho.mqtt.client as mqtt
 
@@ -12,6 +12,7 @@ class KVS(kvs_grpc.KVSServicer):
     def __init__(self, server_id):
         self.hash = Armazenamento()
         self.id_servidor = server_id
+        self.atualizando = False
 
         self.mqtt_client = mqtt.Client()
         self.mqtt_client.on_connect = self.on_connect
@@ -23,14 +24,14 @@ class KVS(kvs_grpc.KVSServicer):
     def on_connect(self, client, userdata, flags, rc):
         print("Conectado ao broker MQTT com resultado: " + str(rc))
         client.subscribe("kvs/comandos")
-        client.subscribe("kvs/atuaizar/resposta")
-        client.subscribe("kvs/atuaizar/pedido")
+        client.subscribe("kvs/atualizar/pedido")
+        client.subscribe(f"kvs/atualizar/resposta/{self.id_servidor}")
 
         client.publish(
             "kvs/atualizar/pedido",
             json.dumps(
                 {
-                    "id_servidor": self.id_servidor,
+                    "remetente": self.id_servidor,
                 }
             ),
         )
@@ -38,38 +39,48 @@ class KVS(kvs_grpc.KVSServicer):
     def on_message(self, client, userdata, msg):
         payload = json.loads(msg.payload.decode())
 
+        if payload.get("remetente") == self.id_servidor:
+            return
+
+        print(
+            f"Mensagem recebida.\
+                Tópico: {msg.topic};\
+                Remetente: {payload.get("remetente")}\
+                {f"Comando: {payload.get("comando")}" if msg.topic == "kvs/comandos" else ""}"
+        )
+
         if msg.topic == "kvs/comandos":
             if payload.get("comando") == "insere":
                 cv = kvs.ChaveValor(
-                    chave=payload.get("chave"), valor=payload.get("valor")
+                    chave=str(payload.get("chave")), valor=str(payload.get("valor"))
                 )
 
                 self.hash.insere(cv)
             elif payload.get("comando") == "remove":
                 cv = kvs.ChaveVersao(
-                    chave=payload.get("chave"), versao=payload.get("versao")
+                    chave=str(payload.get("chave")), versao=int(payload.get("versao"))
                 )
 
                 self.hash.remove(cv)
-        elif msg.topic == "kvs/atualizar/resposta":
-            if payload.get("id_servidor") != self.id_servidor:
-                return
-
-            print("Atualizando os dados...")
-            self.hash.atualizar(payload.get("tabela"), payload.get("versoes"))
-
-            client.unsubscribe("kvs/atualizar/resposta")
         elif msg.topic == "kvs/atualizar/pedido":
             client.publish(
-                "kvs/atualizar/resposta",
+                f"kvs/atualizar/resposta/{payload.get("remetente")}",
                 json.dumps(
                     {
-                        "id_servidor": payload.get("id_servidor"),
+                        "remetente": self.id_servidor,
                         "tabela": self.hash()[0],
                         "versoes": self.hash()[1],
                     }
                 ),
             )
+        elif msg.topic == f"kvs/atualizar/resposta/{self.id_servidor}":
+            if self.atualizando:
+                return
+            print("Atualizando os dados...")
+            self.hash.atualizar(payload.get("tabela"), payload.get("versoes"))
+
+            client.unsubscribe(msg.topic)
+            self.atualizando = True
 
     def Insere(self, request, context):
         print(
@@ -82,9 +93,10 @@ class KVS(kvs_grpc.KVSServicer):
             "kvs/comandos",
             json.dumps(
                 {
+                    "remetente": self.id_servidor,
                     "comando": "insere",
-                    "chave": cv.chave,
-                    "valor": cv.valor,
+                    "chave": request.chave,
+                    "valor": request.valor,
                 }
             ),
         )
@@ -99,18 +111,19 @@ class KVS(kvs_grpc.KVSServicer):
         print("Received batch insert.", request_iterator, sep="\n")
 
         for request in request_iterator:
-            cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
-
             self.mqtt_client.publish(
                 "kvs/comandos",
                 json.dumps(
                     {
+                        "remetente": self.id_servidor,
                         "comando": "insere",
-                        "chave": cv.chave,
-                        "valor": cv.valor,
+                        "chave": request.chave,
+                        "valor": request.valor,
                     }
                 ),
             )
+
+            cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
 
             yield self.hash.insere(cv)
 
@@ -132,9 +145,10 @@ class KVS(kvs_grpc.KVSServicer):
                 "kvs/comandos",
                 json.dumps(
                     {
+                        "remetente": self.id_servidor,
                         "comando": "remove",
-                        "chave": cv.chave,
-                        "versao": cv.versao,
+                        "chave": request.chave,
+                        "versao": request.versao,
                     }
                 ),
             )
@@ -157,9 +171,10 @@ class KVS(kvs_grpc.KVSServicer):
             "kvs/comandos",
             json.dumps(
                 {
+                    "remetente": self.id_servidor,
                     "comando": "remove",
-                    "chave": cv.chave,
-                    "versao": cv.versao,
+                    "chave": request.chave,
+                    "versao": request.versao,
                 }
             ),
         )
