@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 
 from packages.gRPC import kvs_pb2 as kvs
 from packages.gRPC import kvs_pb2_grpc as kvs_grpc
-from packages.armazenamento import Armazenamento
+from packages.Armazenamento import Armazenamento
 
 
 class KVS(kvs_grpc.KVSServicer):
@@ -24,7 +24,6 @@ class KVS(kvs_grpc.KVSServicer):
             logging.error(
                 "Erro ao conectar ao broker MQTT. Verifique se o broker está ativo."
             )
-            exit(1)
         except Exception as e:
             logging.error(f"Erro inesperado ao conectar ao broker MQTT: {e}")
             exit(1)
@@ -45,12 +44,12 @@ class KVS(kvs_grpc.KVSServicer):
             elif comando == "remove":
                 data["versao"] = request.versao
 
-            self.mqtt_client.publish("kvs/comandos", json.dumps(data), 1, qos=1)
+            self.mqtt_client.publish("kvs/comandos", json.dumps(data), qos=1)
 
         except Exception as e:
             logging.error(f"Erro ao publicar comando: {e}, com requisicao: {request}")
 
-    def on_connect(self, client, userdata, flags, reason_code, properties):
+    def on_connect(self, client, userdata, flags, reason_code, properties=None):
         if reason_code == 0:
             logging.info("Conectado ao broker MQTT com sucesso.")
 
@@ -68,17 +67,21 @@ class KVS(kvs_grpc.KVSServicer):
                 {
                     "remetente": self.id_servidor,
                 }
-            ), 
-            qos=1
+            ),
+            qos=1,
         )
 
-    def on_disconnect(self, client, userdata, flags, reason_code, properties):
+    def on_disconnect(self, client, userdata, flags, reason_code, properties=None):
         if reason_code == 0:
             logging.info("Disconectado ao broker MQTT com sucesso.")
 
         if reason_code > 0:
-            logging.error(f"Erro ao desconectar ao broker MQTT. Código: {reason_code}")
-            raise ConnectionRefusedError("Erro ao desconectar ao broker MQTT.")
+            logging.error("MQTT desconectado (%s); tentando reconectar…", reason_code)
+            try:
+                client.reconnect()
+            except Exception:
+                logging.exception("Falha ao reconectar; encerrando.")
+                exit(1)
 
     def on_message(self, client, userdata, message):
         try:
@@ -124,7 +127,7 @@ class KVS(kvs_grpc.KVSServicer):
                         "versoes": self.hash()[1],
                     }
                 ),
-                qos=1
+                qos=1,
             )
 
         elif message.topic == f"kvs/atualizar/resposta/{self.id_servidor}":
@@ -140,10 +143,8 @@ class KVS(kvs_grpc.KVSServicer):
     def Insere(self, request, context):
         logging.info(
             "Operacao de `inserir` recebida.",
-            "chave:",
-            request.chave,
-            "valor:",
-            request.valor,
+            f"chave: {request.chave}",
+            f"valor: {request.valor}",
         )
 
         cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
@@ -158,7 +159,7 @@ class KVS(kvs_grpc.KVSServicer):
         for request in request_iterator:
             cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
 
-            logging.info("chave:", request.chave, "valor:", request.valor)
+            logging.info(f"chave: {request.chave}", f"versao: {request.valor}")
             self.publish_comando("insere", request)
 
             yield self.hash.insere(cv)
@@ -169,7 +170,7 @@ class KVS(kvs_grpc.KVSServicer):
         for request in request_iterator:
             cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
 
-            logging.info("chave:", request.chave, "versao:", request.versao)
+            logging.info(f"chave: {request.chave}", f"versao: {request.versao}")
 
             yield self.hash.consulta(cv)
 
@@ -179,7 +180,7 @@ class KVS(kvs_grpc.KVSServicer):
         for request in request_iterator:
             cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
 
-            logging.info("chave:", request.chave, "versao:", request.versao)
+            logging.info(f"chave: {request.chave}", f"versao: {request.versao}")
             self.publish_comando("remove", request)
 
             yield self.hash.remove(cv)
@@ -187,10 +188,8 @@ class KVS(kvs_grpc.KVSServicer):
     def Consulta(self, request, context):
         logging.info(
             "Operacao de `consulta` recebida.",
-            "chave:",
-            request.chave,
-            "versao:",
-            request.versao,
+            f"chave: {request.chave}",
+            f"versao: {request.versao}",
         )
 
         cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
@@ -200,10 +199,8 @@ class KVS(kvs_grpc.KVSServicer):
     def Remove(self, request, context):
         logging.info(
             "Operacao de `remove` recebida.",
-            "chave:",
-            request.chave,
-            "versao:",
-            request.versao,
+            f"chave: {request.chave}",
+            f"versao: {request.versao}",
         )
 
         cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
@@ -215,8 +212,7 @@ class KVS(kvs_grpc.KVSServicer):
     def Snapshot(self, request, context):
         logging.info(
             "Operacao de `snapshot` recebida.",
-            "versao:",
-            request.versao,
+            f"versao: {request.versao}",
         )
 
         return self.hash.snapshot(kvs.Versao(versao=request.versao))
