@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 
 from packages.gRPC import kvs_pb2 as kvs
 from packages.gRPC import kvs_pb2_grpc as kvs_grpc
-from packages.Armazenamento import Armazenamento
+from packages.armazenamento import Armazenamento
 
 
 class KVS(kvs_grpc.KVSServicer):
@@ -24,6 +24,7 @@ class KVS(kvs_grpc.KVSServicer):
             logging.error(
                 "Erro ao conectar ao broker MQTT. Verifique se o broker está ativo."
             )
+            exit(1)
         except Exception as e:
             logging.error(f"Erro inesperado ao conectar ao broker MQTT: {e}")
             exit(1)
