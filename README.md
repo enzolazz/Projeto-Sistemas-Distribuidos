@@ -94,3 +94,6 @@ As tabelas hashs foram implementadas no [`src/packages/armazenamento`](./src/pac
 ## Descrição das dificuldades
 
 As dificuldades vieram na organização do código, ao tentar transformar gerado pelo `grpc_tools.protoc` em pacotes globais do projeto. A geração dos códigos é acompanhada de imports relativos, o que torna a importação dos pacotes gerados um pouco confusa. Para resolver isso, foi utilizado o pacote `protoletariat` para otimizar e consertar os imports gerados pelo `protoc`. O pacote `protoletariat` é um pacote de terceiros que foi instalado via pip nas dependências do projeto. As chamadas dos pacotes acontecem no arquivo [`compile.sh`](./compile.sh) na funcao `generate_gRPC`. De resto, as implementações foram tranquilas e não trouxeram muitas dificuldades.
+
+---
+Vídeo demonstrando que os requisitos foram atendidos está em [`video`](./video.mp4).
