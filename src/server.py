@@ -32,12 +32,12 @@ class KVS(kvs_grpc.KVSServicer):
             self.mqtt_client.connect("localhost", 1883, 60)
 
         except ConnectionRefusedError:
-            logging.error(
-                "Erro ao conectar ao broker MQTT. Verifique se o broker está ativo."
-            )
+            logging.error("Erro ao conectar ao broker MQTT. Verifique se o broker está ativo.")
+            raise ConnectionRefusedError("Erro ao conectar ao broker MQTT. Verifique se o broker está ativo.")
 
         except Exception as e:
             logging.error(f"Erro inesperado ao conectar ao broker MQTT: {e}")
+            raise ConnectionRefusedError("Erro inesperado ao conectar ao broker MQTT.")
 
         # Inicia o loop de rede em thread separada
         self.mqtt_client.loop_start()
