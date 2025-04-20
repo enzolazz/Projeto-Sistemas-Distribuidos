@@ -38,7 +38,7 @@ class Armazenamento:
             if chave not in self.tabela:
                 return kvs.Tupla()
 
-            if versao == 0:
+            if versao <= 0:
                 versao = self.versoes[chave]
 
             for valor, ver in reversed(self.tabela[chave]):
