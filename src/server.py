@@ -14,13 +14,7 @@ from packages.armazenamento import Armazenamento
 class KVS(kvs_grpc.KVSServicer):
     def __init__(self, port: str):
         # Inicializa o hash de armazenamento
-        try:
-            self.hash = Armazenamento()
-
-        except Exception as e:
-            logging.error(f"Falha ao inicializar hash: {e}")
-            # Se não puder inicializar o hash, servidor não pode funcionar.
-            raise
+        self.hash = Armazenamento()
 
         # Gera um ID único de servidor
         self.id_servidor = str(uuid.uuid4()) + f"-{port}"
@@ -148,50 +142,45 @@ class KVS(kvs_grpc.KVSServicer):
             f"Tópico={message.topic}, Remetente={payload.get('remetente')}"
         )
 
-        try:
-            # Dispara ação conforme tópico
-            if message.topic == "kvs/comandos":
-                cmd = payload.get("comando")
+        # Dispara ação conforme tópico
+        if message.topic == "kvs/comandos":
+            cmd = payload.get("comando")
 
-                if cmd == "insere":
-                    cv = kvs.ChaveValor(
-                        chave=str(payload.get("chave")), valor=str(payload.get("valor"))
-                    )
-                    self.hash.insere(cv)
-
-                elif cmd == "remove":
-                    cv = kvs.ChaveVersao(
-                        chave=str(payload.get("chave")),
-                        versao=int(payload.get("versao")),
-                    )
-                    self.hash.remove(cv)
-
-            elif message.topic == "kvs/atualizar/pedido":
-                # Envia snapshot + versões
-                client.publish(
-                    f"kvs/atualizar/resposta/{payload.get('remetente')}",
-                    json.dumps(
-                        {
-                            "remetente": self.id_servidor,
-                            "tabela": self.hash()[0],
-                            "versoes": self.hash()[1],
-                        }
-                    ),
-                    qos=1,
+            if cmd == "insere":
+                cv = kvs.ChaveValor(
+                    chave=str(payload.get("chave")), valor=str(payload.get("valor"))
                 )
+                self.hash.insere(cv)
 
-            elif message.topic == f"kvs/atualizar/resposta/{self.id_servidor}":
-                if self.atualizando:
-                    return
+            elif cmd == "remove":
+                cv = kvs.ChaveVersao(
+                    chave=str(payload.get("chave")),
+                    versao=int(payload.get("versao")),
+                )
+                self.hash.remove(cv)
 
-                logging.info("Atualizando dados locais com snapshot recebido…")
-                self.hash.atualizar(payload.get("tabela"), payload.get("versoes"))
-                client.unsubscribe(message.topic)
-                self.atualizando = True
+        elif message.topic == "kvs/atualizar/pedido":
+            # Envia snapshot + versões
+            client.publish(
+                f"kvs/atualizar/resposta/{payload.get('remetente')}",
+                json.dumps(
+                    {
+                        "remetente": self.id_servidor,
+                        "tabela": self.hash()[0],
+                        "versoes": self.hash()[1],
+                    }
+                ),
+                qos=1,
+            )
 
-        except Exception as e:
-            # Qualquer falha na aplicação do comando é registrada
-            logging.error(f"Erro ao processar mensagem MQTT: {e}")
+        elif message.topic == f"kvs/atualizar/resposta/{self.id_servidor}":
+            if self.atualizando:
+                return
+
+            logging.info("Atualizando dados locais com snapshot recebido…")
+            self.hash.atualizar(payload.get("tabela"), payload.get("versoes"))
+            client.unsubscribe(message.topic)
+            self.atualizando = True
 
     # --- Métodos gRPC ---
     def Insere(self, request, context):
@@ -206,15 +195,10 @@ class KVS(kvs_grpc.KVSServicer):
             f"valor: {request.valor}",
         )
 
-        try:
-            cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
-            self.publish_comando("insere", request)
+        cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
+        self.publish_comando("insere", request)
 
-            return self.hash.insere(cv)
-
-        except Exception as e:
-            logging.error(f"Erro em Insere(): {e}")
-            context.abort(grpc.StatusCode.INTERNAL, f"Falha ao inserir: {e}")
+        return self.hash.insere(cv)
 
     def InsereVarias(self, request_iterator, context):
         """
@@ -224,16 +208,11 @@ class KVS(kvs_grpc.KVSServicer):
         logging.info("Operacao de `insere-varias` recebida. Requisicoes:\n")
 
         for request in request_iterator:
-            try:
-                logging.info(f"chave: {request.chave}", f"versao: {request.valor}")
-                cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
-                self.publish_comando("insere", request)
+            logging.info(f"chave: {request.chave}", f"versao: {request.valor}")
+            cv = kvs.ChaveValor(chave=request.chave, valor=request.valor)
+            self.publish_comando("insere", request)
 
-                yield self.hash.insere(cv)
-
-            except Exception as e:
-                logging.error(f"Erro em InsereVarias(): {e}")
-                context.abort(grpc.StatusCode.INTERNAL, f"Falha ao inserir várias: {e}")
+            yield self.hash.insere(cv)
 
     def ConsultaVarias(self, request_iterator, context):
         """
@@ -241,17 +220,11 @@ class KVS(kvs_grpc.KVSServicer):
         """
 
         for request in request_iterator:
-            try:
-                logging.info(f"chave: {request.chave}", f"versao: {request.versao}")
-                cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
 
-                yield self.hash.consulta(cv)
+            logging.info(f"chave: {request.chave}", f"versao: {request.versao}")
+            cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
 
-            except Exception as e:
-                logging.error(f"Erro em ConsultaVarias(): {e}")
-                context.abort(
-                    grpc.StatusCode.INTERNAL, f"Falha ao consultar várias: {e}"
-                )
+            yield self.hash.consulta(cv)
 
     def RemoveVarias(self, request_iterator, context):
         """
@@ -261,16 +234,11 @@ class KVS(kvs_grpc.KVSServicer):
         logging.info("Operacao de `remove-varias` recebida. Requisicoes:\n")
 
         for request in request_iterator:
-            try:
-                logging.info(f"chave: {request.chave}", f"versao: {request.versao}")
-                cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
-                self.publish_comando("remove", request)
+            logging.info(f"chave: {request.chave}", f"versao: {request.versao}")
+            cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
+            self.publish_comando("remove", request)
 
-                yield self.hash.remove(cv)
-
-            except Exception as e:
-                logging.error(f"Erro em RemoveVarias(): {e}")
-                context.abort(grpc.StatusCode.INTERNAL, f"Falha ao remover várias: {e}")
+            yield self.hash.remove(cv)
 
     def Consulta(self, request, context):
         """
@@ -283,13 +251,8 @@ class KVS(kvs_grpc.KVSServicer):
             f"versao: {request.versao}",
         )
 
-        try:
-            cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
-            return self.hash.consulta(cv)
-
-        except Exception as e:
-            logging.error(f"Erro em Consulta(): {e}")
-            context.abort(grpc.StatusCode.INTERNAL, f"Falha ao consultar: {e}")
+        cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
+        return self.hash.consulta(cv)
 
     def Remove(self, request, context):
         """
@@ -302,14 +265,9 @@ class KVS(kvs_grpc.KVSServicer):
             f"versao: {request.versao}",
         )
 
-        try:
-            cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
-            self.publish_comando("remove", request)
-            return self.hash.remove(cv)
-
-        except Exception as e:
-            logging.error(f"Erro em Remove(): {e}")
-            context.abort(grpc.StatusCode.INTERNAL, f"Falha ao remover: {e}")
+        cv = kvs.ChaveVersao(chave=request.chave, versao=request.versao)
+        self.publish_comando("remove", request)
+        return self.hash.remove(cv)
 
     def Snapshot(self, request, context):
         """
@@ -321,12 +279,7 @@ class KVS(kvs_grpc.KVSServicer):
             f"versao: {request.versao}",
         )
 
-        try:
-            return self.hash.snapshot(kvs.Versao(versao=request.versao))
-
-        except Exception as e:
-            logging.error(f"Erro em Snapshot(): {e}")
-            context.abort(grpc.StatusCode.INTERNAL, f"Falha ao gerar snapshot: {e}")
+        return self.hash.snapshot(kvs.Versao(versao=request.versao))
 
 
 def serve(PORT: str):
