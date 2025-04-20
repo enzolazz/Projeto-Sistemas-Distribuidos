@@ -37,7 +37,7 @@ class KVS(kvs_grpc.KVSServicer):
 
         except Exception as e:
             logging.error(f"Erro inesperado ao conectar ao broker MQTT: {e}")
-            raise ConnectionRefusedError("Erro inesperado ao conectar ao broker MQTT.")
+            raise Exception("Erro inesperado ao conectar ao broker MQTT.")
 
         # Inicia o loop de rede em thread separada
         self.mqtt_client.loop_start()
@@ -185,8 +185,7 @@ class KVS(kvs_grpc.KVSServicer):
     # --- Métodos gRPC ---
     def Insere(self, request, context):
         """
-        Inserção simples via gRPC. Em caso de falha no armazenamento,
-        aborta a chamada com status INTERNAL.
+        Inserção simples via gRPC.
         """
 
         logging.info(
@@ -202,7 +201,7 @@ class KVS(kvs_grpc.KVSServicer):
 
     def InsereVarias(self, request_iterator, context):
         """
-        Inserção em stream. Se um item falhar, aborta o stream.
+        Inserção em stream.
         """
 
         logging.info("Operacao de `insere-varias` recebida. Requisicoes:\n")
@@ -216,7 +215,7 @@ class KVS(kvs_grpc.KVSServicer):
 
     def ConsultaVarias(self, request_iterator, context):
         """
-        Consulta em stream. Cada falha aborta o stream.
+        Consulta em stream.
         """
 
         for request in request_iterator:
@@ -228,7 +227,7 @@ class KVS(kvs_grpc.KVSServicer):
 
     def RemoveVarias(self, request_iterator, context):
         """
-        Remoção em stream. Cada falha aborta o stream.
+        Remoção em stream.
         """
 
         logging.info("Operacao de `remove-varias` recebida. Requisicoes:\n")
@@ -242,7 +241,7 @@ class KVS(kvs_grpc.KVSServicer):
 
     def Consulta(self, request, context):
         """
-        Consulta única. Em caso de erro no armazenamento, aborta com INTERNAL.
+        Consulta única.
         """
 
         logging.info(
@@ -256,7 +255,7 @@ class KVS(kvs_grpc.KVSServicer):
 
     def Remove(self, request, context):
         """
-        Remoção única. Em caso de erro, aborta o call.
+        Remoção única.
         """
 
         logging.info(
@@ -271,7 +270,7 @@ class KVS(kvs_grpc.KVSServicer):
 
     def Snapshot(self, request, context):
         """
-        Retorna snapshot. Caso falhe, aborta.
+        Retorna snapshot.
         """
 
         logging.info(
@@ -284,7 +283,7 @@ class KVS(kvs_grpc.KVSServicer):
 
 def serve(PORT: str):
     """
-    Inicializa o servidor gRPC. Erros em add_insecure_port ou start são críticos.
+    Inicializa o servidor gRPC.
     """
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
